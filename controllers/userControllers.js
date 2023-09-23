@@ -1,26 +1,26 @@
-const { User } = require("../models");
+const { User, Thought } = require("../models");
 
 module.exports = {
     async getAllUsers(req, res) {
         try {
-            const users = await User.find();
-            res.json(users);
-        } catch (err) {
-            console.error({ message: err });
+            const users = await User.find()
+            .populate({ path: 'thoughts', select: '-__v' });
+            if (!users) {
+              return res.status(404).json({ message: 'No user with that ID' });
+            }
+            return res.status(200).json(users);
+          } catch (err) {
             res.status(500).json(err);
-        }
-    },
+          }
+        },
     async getUserByID(req, res) {
         try {
-          const user = await User.findOne({ _id: req.params.userId }, body, {
-            new: true,
-            runValidators: true,
-          })
-            .select('-__v');
+          const user = await User.findOne({ _id: req.params.userId })
+          .populate({ path: 'thoughts', select: '-__v' });
           if (!user) {
             return res.status(404).json({ message: 'No user with that ID' });
           }
-          res.json(user);
+          return res.status(200).json(user);
         } catch (err) {
           res.status(500).json(err);
         }
